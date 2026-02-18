@@ -4,7 +4,7 @@ type method_t = Get | Head | Post | Put | Patch | Delete
 
 type t = {
   method_ : method_t;
-  path : string;
+  path : string list;
   headers : (string * string) list;
   content : string option;
 }
@@ -34,7 +34,10 @@ let content_length headers =
 
 let parse_request_line line =
   match String.split line ~on:' ' with
-  | [ method_; path; _ ] -> (convert_method method_, path)
+  | [ method_; path; _ ] ->
+      ( convert_method method_,
+        String.split ~on:'/' path
+        |> List.filter ~f:(fun p -> String.length p > 0) )
   | _ -> raise (RequestError "Header line is invalid")
 
 let parse_header_line line =
