@@ -38,9 +38,11 @@ let parse_request_line line =
   | _ -> raise (RequestError "Header line is invalid")
 
 let parse_header_line line =
-  match String.split line ~on:':' with
-  | [ key; value ] -> (String.strip key, String.strip value)
-  | _ ->
+  match String.lsplit2 line ~on:':' with
+  | Some (key, value) ->
+      Stdlib.print_endline key;
+      (String.strip key, String.strip value)
+  | None ->
       raise (RequestError (Stdlib.Printf.sprintf "Illegal header line %s" line))
 
 let read_request_line input =
