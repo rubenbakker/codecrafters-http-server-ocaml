@@ -7,6 +7,17 @@ let handle_client (input, output) =
   let response =
     match request.path with
     | "/" -> "HTTP/1.1 200 OK\r\n\r\n"
+    | "/echo" ->
+        let content =
+          match request.content with Some content -> content | None -> ""
+        in
+        Stdlib.Printf.sprintf
+          "HTTP/1.1 200 OK\r\n\
+           Content-Type: text/plain\r\n\
+           Content-Length: %d\r\n\
+           \r\n\
+           %s"
+          (String.length content) content
     | _ -> "HTTP/1.1 404 Not Found\r\n\r\n"
   in
 
