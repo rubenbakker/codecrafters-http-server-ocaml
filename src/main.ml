@@ -7,7 +7,7 @@ let handle_client (input, output) =
 
   let response =
     match String.split ~on:'/' request.path with
-    | [ "" ] -> "HTTP/1.1 200 OK\r\n\r\n"
+    | [ ""; "" ] -> "HTTP/1.1 200 OK\r\n\r\n"
     | [ ""; "echo"; content ] ->
         Stdlib.Printf.sprintf
           "HTTP/1.1 200 OK\r\n\
