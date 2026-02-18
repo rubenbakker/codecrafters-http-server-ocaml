@@ -10,7 +10,6 @@ let () =
   bind server_socket (ADDR_INET (inet_addr_of_string "127.0.0.1", 4221));
   listen server_socket 1;
 
-  (* TODO: Uncomment the code below to pass the first stage *)
-  (* let (client_socket, _) = accept server_socket in *)
-  (* close client_socket; *)
-  (* close server_socket *)
+  let (client_socket, _) = accept server_socket in
+  close client_socket;
+  close server_socket

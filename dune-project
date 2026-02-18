@@ -14,4 +14,13 @@
   "https://github.com/codecrafters-io/build-your-own-http-server/issues")
  (license "MIT")
  (allow_empty true)
- (version 0.1))
+ (version 0.1)
+ (depends
+  lwt
+  base
+  ppx_assert
+  ppx_expect
+  ppx_inline_test
+  ppx_sexp_conv
+  ppx_hash
+  ppx_compare))
