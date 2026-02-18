@@ -2,9 +2,18 @@ open Base
 
 let ( let* ) = Lwt.bind
 
-let handle_client (_input, output) =
-  let* () = Lwt_io.write_line output "HTTP/1.1 200 OK\r\n\r\n" in
-  Lwt_io.printlf "Sent response"
+let handle_client (input, output) =
+  let* request = Request.read input in
+  let response =
+    match request.path with
+    | "/" -> "HTTP/1.1 200 OK\r\n\r\n"
+    | _ -> "HTTP/1.1 404 Not Found\r\n\r\n"
+  in
+
+  let* () = Lwt_io.write_line output response in
+  Lwt_io.printlf "Sent response" |> ignore;
+  Lwt_io.flush output |> ignore;
+  Lwt_io.close output
 
 let rec accept_connections server_socket =
   let* client_socket, _addr = Lwt_unix.accept server_socket in
