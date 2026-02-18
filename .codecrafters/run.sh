@@ -8,4 +8,5 @@
 
 set -e # Exit on failure
 
-exec /tmp/codecrafters-build-http-server-ocaml/default/main.exe "$@"
+# exec /tmp/codecrafters-build-http-server-ocaml/default/main.exe "$@"
+exec ./_build/default/main.exe "$@"
