@@ -5,8 +5,6 @@ let ( let* ) = Lwt.bind
 let handle_client (input, output) =
   let* request = Request.read input in
 
-  Stdlib.print_endline
-    (List.length (String.split ~on:'/' request.path) |> Int.to_string);
   let response =
     match String.split ~on:'/' request.path with
     | [] -> "HTTP/1.1 200 OK\r\n\r\n"
@@ -18,11 +16,9 @@ let handle_client (input, output) =
            \r\n\
            %s"
           (String.length content) content
-    | x -> "HTTP/1.1 404 Not Found\r\n\r\n"
+    | _ -> "HTTP/1.1 404 Not Found\r\n\r\n"
   in
-
-  let* () = Lwt_io.write_line output response in
-  Lwt_io.printlf "Sent response" |> ignore;
+  let* () = Lwt_io.write output response in
   Lwt_io.flush output |> ignore;
   Lwt_io.close output
 
