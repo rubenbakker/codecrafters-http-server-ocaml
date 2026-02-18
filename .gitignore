@@ -28,5 +28,5 @@ setup.log
 # Local OPAM switch
 _opam/
 
-/dune.ock
+/dune.lock
 /dev-tools.locks
