@@ -8,4 +8,5 @@
 
 set -e # Exit on failure
 
-dune build --build-dir /tmp/codecrafters-build-http-server-ocaml
+# dune build --build-dir /tmp/codecrafters-build-http-server-ocaml
+dune build 
