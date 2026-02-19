@@ -20,13 +20,36 @@ let status_code_text status =
   | NotFoundStatus -> "Not Found"
   | InternalServerErrorStatus -> "Internal Server Error"
 
-let response_string_with_content status content =
-  Stdlib.Printf.sprintf
-    "HTTP/1.1 %d %s\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s"
-    (status_code status) (status_code_text status) (String.length content)
-    content
+let response_header_section headers =
+  List.map headers ~f:(fun (key, value) ->
+      Stdlib.Printf.sprintf "%s: %s" key value)
+  |> String.concat ~sep:"\r\n"
+
+let response_string_with_content ?(status = OkStatus)
+    ?(headers = [ ("Content-Type", "text/plain") ]) content =
+  Stdlib.Printf.sprintf "HTTP/1.1 %d %s\r\n%s\r\nContent-Length: %d\r\n\r\n%s"
+    (status_code status) (status_code_text status)
+    (response_header_section headers)
+    (String.length content) content
 
 let not_found () =
   Stdlib.Printf.sprintf "HTTP/1.1 %d %s\r\n\r\n"
     (status_code NotFoundStatus)
     (status_code_text NotFoundStatus)
+
+let file_response filename =
+  let args = Args.parse_options Stdlib.Sys.argv in
+  let dir =
+    match args.directory with
+    | Some dir -> dir
+    | None -> Stdlib.Filename.current_dir_name
+  in
+  let path = Stdlib.Filename.concat dir filename in
+  match Stdlib.Sys.file_exists path with
+  | false -> not_found ()
+  | true ->
+      let content =
+        In_channel.with_open_bin path (fun inch -> In_channel.input_all inch)
+      in
+      let headers = [ ("Content-Type", "application/octet-stream") ] in
+      response_string_with_content ~headers content
