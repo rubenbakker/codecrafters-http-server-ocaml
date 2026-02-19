@@ -8,15 +8,13 @@ let handle_client (input, output) =
   let response =
     match request.path with
     | [] -> "HTTP/1.1 200 OK\r\n\r\n"
-    | [ "echo"; content ] ->
-        Stdlib.Printf.sprintf
-          "HTTP/1.1 200 OK\r\n\
-           Content-Type: text/plain\r\n\
-           Content-Length: %d\r\n\
-           \r\n\
-           %s"
-          (String.length content) content
-    | _ -> "HTTP/1.1 404 Not Found\r\n\r\n"
+    | [ "echo"; content ] -> Response.response_string_with_content content
+    | [ "user-agent" ] -> (
+        let user_agent = Request.header request "user-agent" in
+        match user_agent with
+        | Some user_agent -> Response.response_string_with_content user_agent
+        | None -> Response.not_found ())
+    | _ -> Response.not_found ()
   in
   let* () = Lwt_io.write output response in
   Lwt_io.flush output |> ignore;

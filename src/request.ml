@@ -27,8 +27,7 @@ let convert_method method_string =
 
 let content_length headers =
   List.map headers ~f:(fun (key, value) ->
-      if String.(lowercase key = "content-length") then
-        Some (Int.of_string value)
+      if String.(key = "content-length") then Some (Int.of_string value)
       else None)
   |> List.filter_opt |> List.hd
 
@@ -43,8 +42,7 @@ let parse_request_line line =
 let parse_header_line line =
   match String.lsplit2 line ~on:':' with
   | Some (key, value) ->
-      Stdlib.print_endline key;
-      (String.strip key, String.strip value)
+      (String.strip key |> String.lowercase, String.strip value)
   | None ->
       raise (RequestError (Stdlib.Printf.sprintf "Illegal header line %s" line))
 
@@ -92,3 +90,9 @@ let read input =
   in
   let method_, path = parse_request_line header_line in
   Lwt.return { method_; path; headers; content }
+
+let header request header_name =
+  let header_name = String.lowercase header_name in
+  List.map request.headers ~f:(fun (key, value) ->
+      if String.(key = header_name) then Some value else None)
+  |> List.filter_opt |> List.hd
