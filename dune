@@ -2,4 +2,4 @@
 
 (executable
  (name main)
- (libraries unix base lwt lwt.unix))
+ (libraries unix base lwt lwt.unix ezgzip))

@@ -29,7 +29,13 @@ let response_header_section headers =
   |> String.concat ~sep:"\r\n"
 
 let response_string_with_content ?(status = OkStatus)
-    ?(headers = [ ("Content-Type", "text/plain") ]) content =
+    ?(headers = [ ("Content-Type", "text/plain") ]) ?(compress = false) content
+    =
+  let content, headers =
+    match compress with
+    | false -> (content, headers)
+    | true -> (Ezgzip.compress content, ("Content-Encoding", "gzip") :: headers)
+  in
   Stdlib.Printf.sprintf "HTTP/1.1 %d %s\r\n%s\r\nContent-Length: %d\r\n\r\n%s"
     (status_code status) (status_code_text status)
     (response_header_section headers)
@@ -44,7 +50,7 @@ let not_found () =
     (status_code NotFoundStatus)
     (status_code_text NotFoundStatus)
 
-let file_response filename =
+let file_response ~compress filename =
   let args = Args.parse_options Stdlib.Sys.argv in
   let dir =
     match args.directory with
@@ -59,7 +65,7 @@ let file_response filename =
         In_channel.with_open_bin path (fun inch -> In_channel.input_all inch)
       in
       let headers = [ ("Content-Type", "application/octet-stream") ] in
-      response_string_with_content ~headers content
+      response_string_with_content ~headers ~compress content
 
 let create_file_response filename content =
   match content with

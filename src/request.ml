@@ -31,6 +31,12 @@ let content_length headers =
       else None)
   |> List.filter_opt |> List.hd
 
+let accept_encoding headers =
+  List.map headers ~f:(fun (key, value) ->
+      if String.(key = "accept-encoding") then Some (String.lowercase value)
+      else None)
+  |> List.filter_opt |> List.hd
+
 let parse_request_line line =
   match String.split line ~on:' ' with
   | [ method_; path; _ ] ->
@@ -96,3 +102,8 @@ let header request header_name =
   List.map request.headers ~f:(fun (key, value) ->
       if String.(key = header_name) then Some value else None)
   |> List.filter_opt |> List.hd
+
+let gzip_accept_encoding request =
+  match accept_encoding request.headers with
+  | None -> false
+  | Some accept_encoding -> String.(accept_encoding = "gzip")

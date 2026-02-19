@@ -5,19 +5,22 @@ let ( let* ) = Lwt.bind
 let handle_client (input, output) =
   let* request = Request.read input in
 
+  let compress = Request.gzip_accept_encoding request in
   let response =
     match (request.method_, request.path) with
-    | Request.Get, [] -> "HTTP/1.1 200 OK\r\n\r\n"
+    | Request.Get, [] -> Response.simple_response Response.OkStatus
     | Request.Get, [ "echo"; content ] ->
-        Response.response_string_with_content content
+        Response.response_string_with_content ~compress content
     | Request.Get, [ "user-agent" ] -> (
         let user_agent = Request.header request "user-agent" in
         match user_agent with
-        | Some user_agent -> Response.response_string_with_content user_agent
+        | Some user_agent ->
+            Response.response_string_with_content ~compress user_agent
         | None -> Response.not_found ())
     | Request.Post, [ "files"; filename ] ->
         Response.create_file_response filename request.content
-    | Request.Get, [ "files"; filename ] -> Response.file_response filename
+    | Request.Get, [ "files"; filename ] ->
+        Response.file_response ~compress filename
     | _ -> Response.not_found ()
   in
   let* () = Lwt_io.write output response in
