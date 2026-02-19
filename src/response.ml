@@ -2,6 +2,7 @@ open! Base
 
 type status_t =
   | OkStatus
+  | CreatedStatus
   | NotFoundStatus
   | BadRequestStatus
   | InternalServerErrorStatus
@@ -9,6 +10,7 @@ type status_t =
 let status_code status =
   match status with
   | OkStatus -> 200
+  | CreatedStatus -> 201
   | BadRequestStatus -> 400
   | NotFoundStatus -> 404
   | InternalServerErrorStatus -> 500
@@ -16,6 +18,7 @@ let status_code status =
 let status_code_text status =
   match status with
   | OkStatus -> "OK"
+  | CreatedStatus -> "Created"
   | BadRequestStatus -> "Bad Request"
   | NotFoundStatus -> "Not Found"
   | InternalServerErrorStatus -> "Internal Server Error"
@@ -31,6 +34,10 @@ let response_string_with_content ?(status = OkStatus)
     (status_code status) (status_code_text status)
     (response_header_section headers)
     (String.length content) content
+
+let simple_response status =
+  Stdlib.Printf.sprintf "HTTP/1.1 %d %s\r\n\r\n" (status_code status)
+    (status_code_text status)
 
 let not_found () =
   Stdlib.Printf.sprintf "HTTP/1.1 %d %s\r\n\r\n"
@@ -53,3 +60,19 @@ let file_response filename =
       in
       let headers = [ ("Content-Type", "application/octet-stream") ] in
       response_string_with_content ~headers content
+
+let create_file_response filename content =
+  match content with
+  | None -> simple_response BadRequestStatus
+  | Some content ->
+      let args = Args.parse_options Stdlib.Sys.argv in
+      let dir =
+        match args.directory with
+        | Some dir -> dir
+        | None -> Stdlib.Filename.current_dir_name
+      in
+      let path = Stdlib.Filename.concat dir filename in
+      Out_channel.with_open_bin path (fun outch ->
+          Out_channel.output_string outch content)
+      |> ignore;
+      simple_response CreatedStatus

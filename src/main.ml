@@ -6,15 +6,18 @@ let handle_client (input, output) =
   let* request = Request.read input in
 
   let response =
-    match request.path with
-    | [] -> "HTTP/1.1 200 OK\r\n\r\n"
-    | [ "echo"; content ] -> Response.response_string_with_content content
-    | [ "user-agent" ] -> (
+    match (request.method_, request.path) with
+    | Request.Get, [] -> "HTTP/1.1 200 OK\r\n\r\n"
+    | Request.Get, [ "echo"; content ] ->
+        Response.response_string_with_content content
+    | Request.Get, [ "user-agent" ] -> (
         let user_agent = Request.header request "user-agent" in
         match user_agent with
         | Some user_agent -> Response.response_string_with_content user_agent
         | None -> Response.not_found ())
-    | [ "files"; filename ] -> Response.file_response filename
+    | Request.Post, [ "files"; filename ] ->
+        Response.create_file_response filename request.content
+    | Request.Get, [ "files"; filename ] -> Response.file_response filename
     | _ -> Response.not_found ()
   in
   let* () = Lwt_io.write output response in
