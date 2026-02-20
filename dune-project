@@ -18,7 +18,8 @@
  (depends
   lwt
   base
-  ezgzip
+  redirect
+  decompress
   ppx_assert
   ppx_expect
   ppx_inline_test

@@ -28,13 +28,16 @@ let response_header_section headers =
       Stdlib.Printf.sprintf "%s: %s" key value)
   |> String.concat ~sep:"\r\n"
 
+let compress content = Gz.Def.dst
+
 let response_string_with_content ?(status = OkStatus)
     ?(headers = [ ("Content-Type", "text/plain") ]) ?(compress = false) content
     =
   let content, headers =
     match compress with
     | false -> (content, headers)
-    | true -> (Ezgzip.compress content, ("Content-Encoding", "gzip") :: headers)
+    | true -> (content, headers)
+    (* (Gzip.compress content, ("Content-Encoding", "gzip") :: headers) *)
   in
   Stdlib.Printf.sprintf "HTTP/1.1 %d %s\r\n%s\r\nContent-Length: %d\r\n\r\n%s"
     (status_code status) (status_code_text status)
