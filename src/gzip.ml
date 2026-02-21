@@ -8,4 +8,4 @@ let run_command cmd =
   r
 
 let compress content =
-  run_command (Stdlib.Printf.sprintf "echo %s | gzip" content)
+  run_command (Stdlib.Printf.sprintf "echo -n %s | gzip" content)
