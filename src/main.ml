@@ -24,11 +24,16 @@ let rec handle_client (input, output) =
     | _ -> Response.not_found ()
   in
   let* () = Lwt_io.write output response in
+  let* () = Lwt_io.flush output in
   match needs_to_close_connection with
-  | false -> handle_client (input, output)
-  | true ->
-      Lwt_io.flush output |> ignore;
-      Lwt_io.close output
+  | false ->
+      Lwt.catch
+        (fun () -> handle_client (input, output))
+        (fun result ->
+          match result with
+          | Stdlib.Exit -> Lwt.return_unit
+          | exn -> Lwt_io.close output)
+  | true -> Lwt_io.close output
 
 let rec accept_connections server_socket =
   let* client_socket, _addr = Lwt_unix.accept server_socket in
