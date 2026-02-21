@@ -19,7 +19,6 @@
   lwt
   base
   ezgzip
-  decompress
   ppx_assert
   ppx_expect
   ppx_inline_test
