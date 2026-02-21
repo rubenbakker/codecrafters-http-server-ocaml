@@ -33,7 +33,11 @@ let content_length headers =
 
 let accept_encoding headers =
   List.map headers ~f:(fun (key, value) ->
-      if String.(key = "accept-encoding") then Some (String.lowercase value)
+      if String.(key = "accept-encoding") then
+        String.(lowercase value |> split ~on:',')
+        |> List.map ~f:String.strip
+        |> List.filter ~f:(fun x -> String.(x = "gzip"))
+        |> List.hd
       else None)
   |> List.filter_opt |> List.hd
 
