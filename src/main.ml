@@ -5,6 +5,10 @@ let ( let* ) = Lwt.bind
 let rec handle_client (input, output) =
   let* request = Request.read input in
   let needs_to_close_connection = Request.needs_to_close_connection request in
+  (match needs_to_close_connection with
+    | true -> Lwt_io.eprintlf ">>> needs_to_close_connection"
+    | false -> Lwt_io.eprintlf ">>> NO needs_to_close_connection")
+  |> ignore;
   let compress = Request.gzip_accept_encoding request in
   let response =
     match (request.method_, request.path) with
