@@ -34,7 +34,7 @@ let response_string_with_content ?(status = OkStatus)
   let content, headers =
     match compress with
     | false -> (content, headers)
-    | true -> (Gzip.compress content, headers)
+    | true -> (Gzip.compress content, ("Content-Encoding", "gzip") :: headers)
   in
   Stdlib.Printf.sprintf "HTTP/1.1 %d %s\r\n%s\r\nContent-Length: %d\r\n\r\n%s"
     (status_code status) (status_code_text status)

@@ -35,8 +35,6 @@ let rec accept_connections server_socket =
   accept_connections server_socket
 
 let start_server port =
-  Stdlib.Printf.printf "LS: %s"
-    (Gzip.run_command (Stdlib.Printf.sprintf "echo %s | gzip" "hello world"));
   Stdlib.flush Stdlib.stdout;
   let sockaddr = Unix.(ADDR_INET (inet_addr_of_string "127.0.0.1", 4221)) in
   let server_socket = Lwt_unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
