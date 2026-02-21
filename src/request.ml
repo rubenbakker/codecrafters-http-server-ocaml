@@ -107,7 +107,17 @@ let header request header_name =
       if String.(key = header_name) then Some value else None)
   |> List.filter_opt |> List.hd
 
+let needs_to_close_connection request =
+  match header request "connection" with
+  | None -> false
+  | Some value -> String.(lowercase value = "close")
+
 let gzip_accept_encoding request =
+  match accept_encoding request.headers with
+  | None -> false
+  | Some accept_encoding -> String.(accept_encoding = "gzip")
+
+let persistent_connection request =
   match accept_encoding request.headers with
   | None -> false
   | Some accept_encoding -> String.(accept_encoding = "gzip")

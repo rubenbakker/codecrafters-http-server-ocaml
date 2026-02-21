@@ -2,9 +2,9 @@ open Base
 
 let ( let* ) = Lwt.bind
 
-let handle_client (input, output) =
+let rec handle_client (input, output) =
   let* request = Request.read input in
-
+  let needs_to_close_connection = Request.needs_to_close_connection request in
   let compress = Request.gzip_accept_encoding request in
   let response =
     match (request.method_, request.path) with
@@ -24,8 +24,11 @@ let handle_client (input, output) =
     | _ -> Response.not_found ()
   in
   let* () = Lwt_io.write output response in
-  Lwt_io.flush output |> ignore;
-  Lwt_io.close output
+  match needs_to_close_connection with
+  | false -> handle_client (input, output)
+  | true ->
+      Lwt_io.flush output |> ignore;
+      Lwt_io.close output
 
 let rec accept_connections server_socket =
   let* client_socket, _addr = Lwt_unix.accept server_socket in
