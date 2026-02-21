@@ -5,10 +5,6 @@ let ( let* ) = Lwt.bind
 let rec handle_client (input, output) =
   let* request = Request.read input in
   let needs_to_close_connection = Request.needs_to_close_connection request in
-  (match needs_to_close_connection with
-    | true -> Lwt_io.eprintlf ">>> needs_to_close_connection"
-    | false -> Lwt_io.eprintlf ">>> NO needs_to_close_connection")
-  |> ignore;
   let compress = Request.gzip_accept_encoding request in
   let response =
     match (request.method_, request.path) with
@@ -38,7 +34,8 @@ let rec accept_connections server_socket =
   let* client_socket, _addr = Lwt_unix.accept server_socket in
   let input = Lwt_io.of_fd ~mode:Lwt_io.input client_socket in
   let output = Lwt_io.of_fd ~mode:Lwt_io.output client_socket in
-  Lwt.async (fun () -> handle_client (input, output));
+  Lwt.async (fun () ->
+      try handle_client (input, output) with _ -> Lwt.return_unit);
   accept_connections server_socket
 
 let start_server port =
