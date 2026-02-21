@@ -6,3 +6,6 @@ let run_command cmd =
   let r = In_channel.input_all inp in
   In_channel.close inp;
   r
+
+let compress content =
+  run_command (Stdlib.Printf.sprintf "echo %s | gzip" content)
