@@ -34,8 +34,8 @@ let rec accept_connections server_socket =
   let* client_socket, _addr = Lwt_unix.accept server_socket in
   let input = Lwt_io.of_fd ~mode:Lwt_io.input client_socket in
   let output = Lwt_io.of_fd ~mode:Lwt_io.output client_socket in
-  Lwt.async (fun () ->
-      try handle_client (input, output) with _ -> Lwt.return_unit);
+  (try Lwt.async (fun () -> handle_client (input, output))
+   with End_of_file -> ());
   accept_connections server_socket
 
 let start_server port =
