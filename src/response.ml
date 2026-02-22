@@ -95,9 +95,11 @@ let close (close : bool) (response : t) =
   else response
 
 let response_header_section headers =
-  List.map headers ~f:(fun (key, value) ->
-      Stdlib.Printf.sprintf "%s: %s" key value)
-  |> String.concat ~sep:"\r\n"
+  String.append
+    (List.map headers ~f:(fun (key, value) ->
+         Stdlib.Printf.sprintf "%s: %s" key value)
+    |> String.concat ~sep:"\r\n")
+    "\r\n"
 
 let write (output : Lwt_io.output_channel) (response : t) =
   let* () =
@@ -108,7 +110,7 @@ let write (output : Lwt_io.output_channel) (response : t) =
   let* () =
     Lwt_io.write output (response_header_section (List.rev response.headers))
   in
-  let* () = Lwt_io.write output "\r\n\r\n" in
+  let* () = Lwt_io.write output "\r\n" in
   match response.body with
   | None -> Lwt.return_unit
   | Some body -> Lwt_io.write output body
