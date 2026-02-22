@@ -109,4 +109,4 @@ let write (output : Lwt_io.output_channel) (response : t) =
   let* () = Lwt_io.write output "\r\n" in
   match response.body with
   | None -> Lwt.return_unit
-  | Some body -> Lwt_io.write output body
+  | Some body -> Lwt_io.fprintf output "%s\r\n" body
