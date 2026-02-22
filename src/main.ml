@@ -24,12 +24,6 @@ let rec handle_client (input, output) =
     Response.compress compress response
     |> Response.content_length |> Response.close close |> Response.write output
   in
-  let* () =
-    Response.compress compress response
-    |> Response.content_length |> Response.close close
-    |> Response.write Lwt_io.stdout
-  in
-  let* () = Lwt_io.flush Lwt_io.stdout in
   let* () = Lwt_io.flush output in
   match close with
   | false ->
