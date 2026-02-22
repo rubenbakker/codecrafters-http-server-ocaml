@@ -1,6 +1,5 @@
 open! Base
-
-let ( let* ) = Lwt.bind
+open Utils
 
 type t = { status : status_t; headers : header_t list; body : string option }
 and header_t = string * string

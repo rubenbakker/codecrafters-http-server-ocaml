@@ -1,4 +1,5 @@
 open Base
+open Utils
 
 type method_t = Get | Head | Post | Put | Patch | Delete
 
@@ -10,8 +11,6 @@ type t = {
 }
 
 exception RequestError of string
-
-let ( let* ) = Lwt.bind
 
 let convert_method method_string =
   match String.lowercase method_string with

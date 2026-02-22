@@ -1,6 +1,5 @@
 open Base
-
-let ( let* ) = Lwt.bind
+open Utils
 
 let rec handle_client (input, output) =
   let* request = Request.read input in
