@@ -95,11 +95,10 @@ let close (close : bool) (response : t) =
   else response
 
 let response_header_section headers =
-  String.append
+  String.append "\r\n"
     (List.map headers ~f:(fun (key, value) ->
          Stdlib.Printf.sprintf "%s: %s" key value)
     |> String.concat ~sep:"\r\n")
-    "\r\n"
 
 let write (output : Lwt_io.output_channel) (response : t) =
   let* () =
