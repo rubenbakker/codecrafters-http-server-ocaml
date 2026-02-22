@@ -105,8 +105,10 @@ let write (output : Lwt_io.output_channel) (response : t) =
       (status_code response.status)
       (status_code_text response.status)
   in
-  let* () = Lwt_io.write output (response_header_section response.headers) in
-  let* () = Lwt_io.write output "\r\n" in
+  let* () =
+    Lwt_io.write output (response_header_section (List.rev response.headers))
+  in
+  let* () = Lwt_io.write output "\r\n\r\n" in
   match response.body with
   | None -> Lwt.return_unit
-  | Some body -> Lwt_io.fprintf output "%s\r\n" body
+  | Some body -> Lwt_io.write output body
