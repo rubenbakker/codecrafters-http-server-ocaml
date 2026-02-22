@@ -4,28 +4,28 @@ let ( let* ) = Lwt.bind
 
 let rec handle_client (input, output) =
   let* request = Request.read input in
-  let needs_to_close_connection = Request.needs_to_close_connection request in
-  let compress = Request.gzip_accept_encoding request in
-  let response =
+  let response : Response.t =
     match (request.method_, request.path) with
     | Request.Get, [] -> Response.simple_response Response.OkStatus
-    | Request.Get, [ "echo"; content ] ->
-        Response.response_string_with_content ~compress content
+    | Request.Get, [ "echo"; content ] -> Response.response_with_body content
     | Request.Get, [ "user-agent" ] -> (
         let user_agent = Request.header request "user-agent" in
         match user_agent with
-        | Some user_agent ->
-            Response.response_string_with_content ~compress user_agent
+        | Some user_agent -> Response.response_with_body user_agent
         | None -> Response.not_found ())
     | Request.Post, [ "files"; filename ] ->
         Response.create_file_response filename request.content
-    | Request.Get, [ "files"; filename ] ->
-        Response.file_response ~compress filename
+    | Request.Get, [ "files"; filename ] -> Response.file_response filename
     | _ -> Response.not_found ()
   in
-  let* () = Lwt_io.write output response in
+  let close = Request.needs_to_close_connection request in
+  let compress = Request.gzip_accept_encoding request in
+  let* () =
+    Response.compress compress response
+    |> Response.content_length |> Response.close close |> Response.write output
+  in
   let* () = Lwt_io.flush output in
-  match needs_to_close_connection with
+  match close with
   | false ->
       Lwt.catch
         (fun () -> handle_client (input, output))
